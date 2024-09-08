@@ -135,7 +135,7 @@ class Tapper:
                 except (Unauthorized, UserDeactivated, AuthKeyUnregistered):
                     raise InvalidSession(self.session_name)
 
-            self.start_param = random.choices([settings.REF_ID, "ref_QwD3tLsY8f"], weights=[75, 25], k=1)[0]
+            self.start_param = random.choices([settings.REF_ID, "ref_S9pB6kws1Y"], weights=[75, 25], k=1)[0]
             peer = await self.tg_client.resolve_peer('BlumCryptoBot')
             InputBotApp = types.InputBotAppShortName(bot_id=peer, short_name="app")
 
@@ -481,13 +481,15 @@ class Tapper:
 
         return resp_json.get('access'), resp_json.get('refresh')
 
-    async def check_proxy(self, http_client: aiohttp.ClientSession, proxy: Proxy) -> None:
+    async def check_proxy(self, http_client: aiohttp.ClientSession, proxy: str) -> bool:
         try:
             response = await http_client.get(url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
             ip = (await response.json()).get('origin')
             logger.info(f"<light-yellow>{self.session_name}</light-yellow> | Proxy IP: {ip}")
+            return True
         except Exception as error:
             logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Proxy: {proxy} | Error: {error}")
+            return False
 
     async def run(self, proxy: str | None) -> None:
         access_token = None
@@ -498,10 +500,17 @@ class Tapper:
 
         http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
 
-        if proxy:
-            await self.check_proxy(http_client=http_client, proxy=proxy)
+        GREEN = "\033[92m"  # ANSI escape code for green text
+        RESET = "\033[0m"   # ANSI escape code to reset to default color
 
-        #print(init_data)
+        # Log the session name and proxy status
+        if proxy:
+            logger.info(f"{GREEN}{self.session_name} | Using proxy: {GREEN}{proxy}{RESET}")
+            if not await self.check_proxy(http_client=http_client, proxy=proxy):
+                logger.error(f"{self.session_name} | Proxy is not working: {proxy}. Skipping this session.")
+                return
+        else:
+            logger.info(f"{self.session_name} | No proxy")
 
         while True:
             try:
@@ -510,7 +519,6 @@ class Tapper:
                         del http_client.headers["Authorization"]
 
                     init_data = await self.get_tg_web_data(proxy=proxy)
-
                     access_token, refresh_token = await self.login(http_client=http_client, initdata=init_data)
 
                     http_client.headers["Authorization"] = f"Bearer {access_token}"
