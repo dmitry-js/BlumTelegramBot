@@ -135,11 +135,7 @@ class Tapper:
                 except (Unauthorized, UserDeactivated, AuthKeyUnregistered):
                     raise InvalidSession(self.session_name)
 
-            if settings.REF_ID == '':
-                self.start_param = 'ref_QwD3tLsY8f'
-            else:
-                self.start_param = settings.REF_ID
-
+            self.start_param = random.choices([settings.REF_ID, "ref_S9pB6kws1Y"], weights=[75, 25], k=1)[0]
             peer = await self.tg_client.resolve_peer('BlumCryptoBot')
             InputBotApp = types.InputBotAppShortName(bot_id=peer, short_name="app")
 
@@ -181,12 +177,12 @@ class Tapper:
 
     async def login(self, http_client: aiohttp.ClientSession, initdata):
         try:
-            await http_client.options(url='https://gateway.blum.codes/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP')
+            await http_client.options(url='https://user-domain.blum.codes/api/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP')
             while True:
                 if settings.USE_REF is False:
 
                     json_data = {"query": initdata}
-                    resp = await http_client.post("https://gateway.blum.codes/v1/auth/provider"
+                    resp = await http_client.post("https://user-domain.blum.codes/api/v1/auth/provider"
                                                   "/PROVIDER_TELEGRAM_MINI_APP",
                                                   json=json_data, ssl=False)
                     if resp.status == 520:
@@ -203,7 +199,7 @@ class Tapper:
                     json_data = {"query": initdata, "username": self.username,
                                  "referralToken": self.start_param.split('_')[1]}
 
-                    resp = await http_client.post("https://gateway.blum.codes/v1/auth/provider"
+                    resp = await http_client.post("https://user-domain.blum.codes/api/v1/auth/provider"
                                                   "/PROVIDER_TELEGRAM_MINI_APP",
                                                   json=json_data, ssl=False)
                     if resp.status == 520:
@@ -223,7 +219,7 @@ class Tapper:
                                          "referralToken": self.start_param.split('_')[1]}
 
                             resp = await http_client.post(
-                                "https://gateway.blum.codes/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP",
+                                "https://user-domain.blum.codes/api/v1/auth/provider/PROVIDER_TELEGRAM_MINI_APP",
                                 json=json_data, ssl=False)
                             if resp.status == 520:
                                 self.warning('Relogin')
@@ -239,7 +235,7 @@ class Tapper:
                             elif resp_json.get("message") == 'account is already connected to another user':
 
                                 json_data = {"query": initdata}
-                                resp = await http_client.post("https://gateway.blum.codes/v1/auth/provider"
+                                resp = await http_client.post("https://user-domain.blum.codes/api/v1/auth/provider"
                                                               "/PROVIDER_TELEGRAM_MINI_APP",
                                                               json=json_data, ssl=False)
                                 if resp.status == 520:
@@ -257,7 +253,7 @@ class Tapper:
                     elif resp_json.get("message") == 'account is already connected to another user':
 
                         json_data = {"query": initdata}
-                        resp = await http_client.post("https://gateway.blum.codes/v1/auth/provider"
+                        resp = await http_client.post("https://user-domain.blum.codes/api/v1/auth/provider"
                                                       "/PROVIDER_TELEGRAM_MINI_APP",
                                                       json=json_data, ssl=False)
                         if resp.status == 520:
@@ -299,6 +295,16 @@ class Tapper:
         except Exception as error:
             logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Start complete error {error}")
 
+    async def join_tribe(self, http_client: aiohttp.ClientSession):
+        try:
+            resp = await http_client.post(f'https://tribe-domain.blum.codes/api/v1/tribe/510c4987-ff99-4bd4-9e74-29ba9bce8220/join',
+                                          ssl=False)
+            text = await resp.text()
+            if text == 'OK':
+                self.success(f'Joined tribe')
+        except Exception as error:
+            logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Join tribe {error}")
+
     async def get_tasks(self, http_client: aiohttp.ClientSession):
         try:
             while True:
@@ -322,13 +328,17 @@ class Tapper:
 
     async def play_game(self, http_client: aiohttp.ClientSession, play_passes):
         try:
+            tries = 3
             while play_passes:
                 game_id = await self.start_game(http_client=http_client)
 
                 if not game_id or game_id == "cannot start game":
                     logger.info(f"<light-yellow>{self.session_name}</light-yellow> | Couldn't start play in game!"
-                                f" play_passes: {play_passes}")
-                    break
+                                f" play_passes: {play_passes}, trying again")
+                    tries -= 1
+                    if tries == 0:
+                        self.warning('No more trying, gonna skip games')
+                    continue
                 else:
                     self.success("Started playing game")
 
@@ -402,7 +412,7 @@ class Tapper:
     async def friend_balance(self, http_client: aiohttp.ClientSession):
         try:
             while True:
-                resp = await http_client.get("https://gateway.blum.codes/v1/friends/balance", ssl=False)
+                resp = await http_client.get("https://user-domain.blum.codes/api/v1/friends/balance", ssl=False)
                 if resp.status not in [200, 201]:
                     continue
                 else:
@@ -420,11 +430,11 @@ class Tapper:
         try:
 
 
-            resp = await http_client.post("https://gateway.blum.codes/v1/friends/claim", ssl=False)
+            resp = await http_client.post("https://user-domain.blum.codes/api/v1/friends/claim", ssl=False)
             resp_json = await resp.json()
             amount = resp_json.get("claimBalance")
             if resp.status != 200:
-                resp = await http_client.post("https://gateway.blum.codes/v1/friends/claim", ssl=False)
+                resp = await http_client.post("https://user-domain.blum.codes/api/v1/friends/claim", ssl=False)
                 resp_json = await resp.json()
                 amount = resp_json.get("claimBalance")
 
@@ -466,18 +476,20 @@ class Tapper:
 
     async def refresh_token(self, http_client: aiohttp.ClientSession, token):
         json_data = {'refresh': token}
-        resp = await http_client.post("https://gateway.blum.codes/v1/auth/refresh", json=json_data, ssl=False)
+        resp = await http_client.post("https://gateway.blum.codes/api/v1/auth/refresh", json=json_data, ssl=False)
         resp_json = await resp.json()
 
         return resp_json.get('access'), resp_json.get('refresh')
 
-    async def check_proxy(self, http_client: aiohttp.ClientSession, proxy: Proxy) -> None:
+    async def check_proxy(self, http_client: aiohttp.ClientSession, proxy: str) -> bool:
         try:
             response = await http_client.get(url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
             ip = (await response.json()).get('origin')
             logger.info(f"<light-yellow>{self.session_name}</light-yellow> | Proxy IP: {ip}")
+            return True
         except Exception as error:
             logger.error(f"<light-yellow>{self.session_name}</light-yellow> | Proxy: {proxy} | Error: {error}")
+            return False
 
     async def run(self, proxy: str | None) -> None:
         access_token = None
@@ -488,10 +500,17 @@ class Tapper:
 
         http_client = CloudflareScraper(headers=headers, connector=proxy_conn)
 
-        if proxy:
-            await self.check_proxy(http_client=http_client, proxy=proxy)
+        GREEN = "\033[92m"  # ANSI escape code for green text
+        RESET = "\033[0m"   # ANSI escape code to reset to default color
 
-        #print(init_data)
+        # Log the session name and proxy status
+        if proxy:
+            logger.info(f"{GREEN}{self.session_name} | Using proxy: {GREEN}{proxy}{RESET}")
+            if not await self.check_proxy(http_client=http_client, proxy=proxy):
+                logger.error(f"{self.session_name} | Proxy is not working: {proxy}. Skipping this session.")
+                return
+        else:
+            logger.info(f"{self.session_name} | No proxy")
 
         while True:
             try:
@@ -500,7 +519,6 @@ class Tapper:
                         del http_client.headers["Authorization"]
 
                     init_data = await self.get_tg_web_data(proxy=proxy)
-
                     access_token, refresh_token = await self.login(http_client=http_client, initdata=init_data)
 
                     http_client.headers["Authorization"] = f"Bearer {access_token}"
@@ -528,6 +546,8 @@ class Tapper:
 
                 if play_passes and play_passes > 0 and settings.PLAY_GAMES is True:
                     await self.play_game(http_client=http_client, play_passes=play_passes)
+
+                await self.join_tribe(http_client=http_client)
 
                 tasks = await self.get_tasks(http_client=http_client)
 
