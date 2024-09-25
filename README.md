@@ -1,8 +1,4 @@
-[![Static Badge](https://img.shields.io/badge/Telegram-Channel-Link?style=for-the-badge&logo=Telegram&logoColor=white&logoSize=auto&color=blue)](https://t.me/hidden_coding)
-
-[![Static Badge](https://img.shields.io/badge/Telegram-Chat-yes?style=for-the-badge&logo=Telegram&logoColor=white&logoSize=auto&color=blue)](https://t.me/hidden_codding_chat)
-
-[![Static Badge](https://img.shields.io/badge/Telegram-Bot%20Link-Link?style=for-the-badge&logo=Telegram&logoColor=white&logoSize=auto&color=blue)](https://t.me/BlumCryptoBot/app?startapp=ref_QwD3tLsY8f)
+[![Static Badge](https://img.shields.io/badge/Telegram-Bot%20Link-Link?style=for-the-badge&logo=Telegram&logoColor=white&logoSize=auto&color=blue)](https://t.me/BlumCryptoBot/app?startapp=ref_S9pB6kws1Y)
 
 ## Recommendation before use
 
@@ -20,7 +16,7 @@
 |           Support for pyrogram .session            |     ✅     |
 
 
-## [Settings](https://github.com/HiddenCodeDevs/BlumTelegramBot/blob/main/.env-example/)
+## Settings
 |          Settings           |                                 Description                                  |
 |:---------------------------:|:----------------------------------------------------------------------------:|
 |    **API_ID / API_HASH**    |   Platform data from which to run the Telegram session (default - android)   |
@@ -46,9 +42,9 @@ Before you begin, make sure you have the following installed:
 3. Record the API_ID and API_HASH provided after registering your application in the .env file.
 
 ## Installation
-You can download the [**repository**](https://github.com/HiddenCodeDevs/BlumTelegramBot) by cloning it to your system and installing the necessary dependencies:
+You can download the [**repository**](https://github.com/dmitry-js/BlumTelegramBot) by cloning it to your system and installing the necessary dependencies:
 ```shell
-git clone https://github.com/HiddenCodeDevs/BlumTelegramBot.git
+git clone https://github.com/dmitry-js/BlumTelegramBot.git
 cd BlumTelegramBot
 ```
 
@@ -104,11 +100,3 @@ You can also use arguments for quick start, for example:
 # 1 - Run clicker
 # 2 - Creates a session
 ```
-
-
-
-
-### Contacts
-
-For support or questions, contact me on Telegram: 
-[![Static Badge](https://img.shields.io/badge/telegram-bot_author-link?style=for-the-badge&logo=telegram&logoColor=white&logoSize=auto&color=blue)](https://t.me/unknxwnplxya)
